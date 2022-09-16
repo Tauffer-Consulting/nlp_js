@@ -10,7 +10,7 @@ const textData = {
     "relationships": [
       {
         "id": "1",
-        "type": "subject"
+        "type": "verb"
       }
     ]
   },
@@ -97,7 +97,7 @@ function App() {
           id={'span-tag-' + i}
           style={{
             backgroundColor: color_pallete[i],
-            fontSize: "30px",
+            fontSize: "35px",
             marginLeft: "25px",
             marginRight: "25px"
           }}
@@ -119,33 +119,36 @@ function App() {
       const sourceNode = document.getElementById(tags[i].props.id)
       const textObj = textData[i.toString()];
       const relationships = textObj.relationships
-      function drawArrow(value) {
+      function drawArrow(value, index) {
         const targetNode = document.getElementById('span-tag-' + value.id);
-        if (i % 2 === 0) {
+        if ((i + index) % 2 === 0) {
           var position = 'top';
+          var gravity = -100;
         } else {
           var position = 'bottom';
+          var gravity = 100;
         }
         const lineOptions = {
-          path: "arc",
+          path: "fluid",
           startSocket: position,
           endSocket: position,
           size: 4,
           dropShadow: true,
-          // startSocketGravity: [0, -300],
-          // endSocketGravity: [0, -300],
+          startSocketGravity: [0, gravity],
+          endSocketGravity: [0, gravity],
+          middleLabel: LeaderLine.captionLabel(value.type, { color: 'black', fontSize: "25px" }),
           // color: window.getComputedStyle(document.getElementById("bibliography")).color,
           // startPlug: "disc",
           // endPlug: "behind",
         };
         var line = new LeaderLine(
-          // sourceNode,
           LeaderLine.mouseHoverAnchor(
             sourceNode,
             'draw',
             {
-              animOptions: { duration: 1000, timing: 'ease' },
-              style: { backgroundColor: null, color: null }
+              animOptions: { duration: 800, timing: 'ease' },
+              style: { backgroundColor: 'rgba(0,0,0,0)', backgroundImage: null, color: null },
+              hoverStyle: { backgroundColor: 'rgba(0,0,0,0)', backgroundImage: null, color: null }
             }
           ),
           targetNode,
@@ -159,7 +162,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Interactive text component</h1>
+      <h1>Interactive grammar</h1>
       <div className="card">
         <form>
           <label>Text:</label>
@@ -174,14 +177,13 @@ function App() {
         </button>
         <br></br>
         <br></br>
-        <br></br>
-        <div id='div-spans-content'>
+        <div id='div-spans-content' style={{ border: '1px solid black', paddingTop: '150px', paddingBottom: '150px', paddingLeft: '50px', paddingRight: '50px' }} >
           <p>
             {tags}
           </p>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 
