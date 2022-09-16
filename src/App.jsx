@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import LeaderLine from "react-leader-line";
 
@@ -66,6 +66,7 @@ const color_pallete = [
 function App() {
   const [message, setMessage] = useState('');
   const [tags, setTags] = useState([]);
+  const [newTagsFlag, setnewTagsFlag] = useState(1);
 
   const handleInputTextChange = event => {
     setMessage(event.target.value);
@@ -83,66 +84,78 @@ function App() {
     event.target.style.background = newBackgroundColor;
   };
 
-  const highlightRelatedWords = event => {
-    const textObj = textData[event.target.getAttribute('index')];
-    const relationships = textObj.relationships
-
-    function myFunction(value) {
-      const el = document.getElementById('span-tag-' + value.id);
-
-      const [r, g, b, a] = el.style.backgroundColor.split(',');
-      const newBackgroundColor = [r, g, b, 0.5].join(',') + ')';
-      el.style.background = newBackgroundColor;
-
-      const lineOptions = {
-        path: "arc",
-        startSocket: "top",
-        endSocket: "top",
-        size: 4,
-        startSocketGravity: [-192, -172],
-        endSocketGravity: [192, -172],
-        // color: window.getComputedStyle(document.getElementById("bibliography")).color,
-        // startPlug: "disc",
-        // endPlug: "behind",
-      };
-
-      var line = new LeaderLine(
-        event.target,
-        el,
-        lineOptions
-      );
-      line.id = "arrow-line-" + el.id
-    }
-    relationships.forEach(myFunction);
-  }
-
   const handleButtonClick = event => {
+    // Loop through input words
     const myArray = message.split(" ");
-
     var indents = [];
     for (let i = 0; i < myArray.length; i++) {
       indents.push(
         <span
           className='indent'
-          key={i}
+          key={2 * i}
           index={i}
           id={'span-tag-' + i}
           style={{
             backgroundColor: color_pallete[i],
             fontSize: "30px",
+            marginLeft: "25px",
+            marginRight: "25px"
           }}
-          onMouseOver={changeBackgroundOver}
-          onMouseLeave={changeBackgroundLeave}
-          onClick={highlightRelatedWords}
+        // onMouseOver={changeBackgroundOver}
+        // onMouseLeave={changeBackgroundLeave}
+        // onClick={highlightRelatedWords}
         >
           {myArray[i]}
         </span>
       );
-      indents.push(<span style={{ marginLeft: "60px" }}></span>);
     }
-
     setTags(indents);
+    setnewTagsFlag(newTagsFlag + 1)
   };
+
+  // Draw Arrows at each update of the tags
+  useEffect(() => {
+    for (let i = 0; i < tags.length; i++) {
+      const sourceNode = document.getElementById(tags[i].props.id)
+      const textObj = textData[i.toString()];
+      const relationships = textObj.relationships
+      function drawArrow(value) {
+        const targetNode = document.getElementById('span-tag-' + value.id);
+        if (i % 2 === 0) {
+          var position = 'top';
+        } else {
+          var position = 'bottom';
+        }
+        const lineOptions = {
+          path: "arc",
+          startSocket: position,
+          endSocket: position,
+          size: 4,
+          dropShadow: true,
+          // startSocketGravity: [0, -300],
+          // endSocketGravity: [0, -300],
+          // color: window.getComputedStyle(document.getElementById("bibliography")).color,
+          // startPlug: "disc",
+          // endPlug: "behind",
+        };
+        var line = new LeaderLine(
+          // sourceNode,
+          LeaderLine.mouseHoverAnchor(
+            sourceNode,
+            'draw',
+            {
+              animOptions: { duration: 1000, timing: 'ease' },
+              style: { backgroundColor: null, color: null }
+            }
+          ),
+          targetNode,
+          lineOptions
+        );
+        line.id = "arrow-line-" + i.toString() + '-' + value.id
+      }
+      relationships.forEach(drawArrow);
+    }
+  }, [newTagsFlag]);
 
   return (
     <div className="App">
