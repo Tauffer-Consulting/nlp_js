@@ -159,7 +159,16 @@ function App() {
               hoverStyle: { backgroundColor: 'rgba(0,0,0,0)', backgroundImage: null, color: null }
             }
           ),
-          targetNode,
+          // targetNode,
+          LeaderLine.mouseHoverAnchor(
+            targetNode,
+            'draw',
+            {
+              animOptions: { duration: 800, timing: 'ease' },
+              style: { backgroundColor: 'rgba(0,0,0,0)', backgroundImage: null, color: null },
+              hoverStyle: { backgroundColor: 'rgba(0,0,0,0)', backgroundImage: null, color: null }
+            }
+          ),
           lineOptions
         );
         line.id = "arrow-line-" + i.toString() + '-' + tokenHead.ind
