@@ -1,58 +1,59 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import LeaderLine from "react-leader-line";
+import axios from 'axios';
 
 
-const textData = {
-  "0": {
-    "text": "I",
-    "pos": "pronoun",
-    "relationships": [
-      {
-        "id": "1",
-        "type": "verb"
-      }
-    ]
-  },
-  "1": {
-    "text": "had",
-    "pos": "verb",
-    "relationships": [
-      {
-        "id": "0",
-        "type": "subject"
-      },
-      {
-        "id": "3",
-        "type": "object"
-      }
-    ]
-  },
-  "2": {
-    "text": "an",
-    "pos": "article",
-    "relationships": [
-      {
-        "id": "3",
-        "type": "article"
-      }
-    ]
-  },
-  "3": {
-    "text": "apple",
-    "pos": "noun",
-    "relationships": [
-      {
-        "id": "1",
-        "type": "object"
-      },
-      {
-        "id": "2",
-        "type": "article"
-      }
-    ]
-  },
-}
+// const textData = {
+//   "0": {
+//     "text": "I",
+//     "pos": "pronoun",
+//     "relationships": [
+//       {
+//         "id": "1",
+//         "type": "verb"
+//       }
+//     ]
+//   },
+//   "1": {
+//     "text": "had",
+//     "pos": "verb",
+//     "relationships": [
+//       {
+//         "id": "0",
+//         "type": "subject"
+//       },
+//       {
+//         "id": "3",
+//         "type": "object"
+//       }
+//     ]
+//   },
+//   "2": {
+//     "text": "an",
+//     "pos": "article",
+//     "relationships": [
+//       {
+//         "id": "3",
+//         "type": "article"
+//       }
+//     ]
+//   },
+//   "3": {
+//     "text": "apple",
+//     "pos": "noun",
+//     "relationships": [
+//       {
+//         "id": "1",
+//         "type": "object"
+//       },
+//       {
+//         "id": "2",
+//         "type": "article"
+//       }
+//     ]
+//   },
+// }
 
 const color_pallete = [
   "rgba(252, 186, 3, 0)",
@@ -66,7 +67,7 @@ const color_pallete = [
 function App() {
   const [message, setMessage] = useState('');
   const [tags, setTags] = useState([]);
-  const [newTagsFlag, setnewTagsFlag] = useState(1);
+  const [dependencyParsed, setDependencyParsed] = useState({});
 
   const handleInputTextChange = event => {
     setMessage(event.target.value);
@@ -85,7 +86,15 @@ function App() {
   };
 
   const handleButtonClick = event => {
-    // Loop through input words
+    // Request dependency parser
+    const body = {
+      text: message,
+      language: 'en'
+    };
+    axios.post('http://localhost:8000/text/dependency-parser', body)
+      .then(response => setDependencyParsed(response.data));
+
+    // Loop through input words and create paragraph with spans
     const myArray = message.split(" ");
     var indents = [];
     for (let i = 0; i < myArray.length; i++) {
@@ -110,18 +119,17 @@ function App() {
       );
     }
     setTags(indents);
-    setnewTagsFlag(newTagsFlag + 1)
   };
 
   // Draw Arrows at each update of the tags
   useEffect(() => {
     for (let i = 0; i < tags.length; i++) {
-      const sourceNode = document.getElementById(tags[i].props.id)
-      const textObj = textData[i.toString()];
-      const relationships = textObj.relationships
-      function drawArrow(value, index) {
-        const targetNode = document.getElementById('span-tag-' + value.id);
-        if ((i + index) % 2 === 0) {
+      const targetNode = document.getElementById(tags[i].props.id)
+      const tokenObj = dependencyParsed[i.toString()];
+      const tokenHead = tokenObj.head
+      if (tokenHead != null) {
+        const sourceNode = document.getElementById('span-tag-' + tokenHead.ind);
+        if (i % 2 === 0) {
           var position = 'top';
           var gravity = -100;
         } else {
@@ -136,7 +144,7 @@ function App() {
           dropShadow: true,
           startSocketGravity: [0, gravity],
           endSocketGravity: [0, gravity],
-          middleLabel: LeaderLine.captionLabel(value.type, { color: 'black', fontSize: "25px" }),
+          middleLabel: LeaderLine.captionLabel(tokenHead.relationship, { color: 'black', fontSize: "25px" }),
           // color: window.getComputedStyle(document.getElementById("bibliography")).color,
           // startPlug: "disc",
           // endPlug: "behind",
@@ -154,11 +162,10 @@ function App() {
           targetNode,
           lineOptions
         );
-        line.id = "arrow-line-" + i.toString() + '-' + value.id
+        line.id = "arrow-line-" + i.toString() + '-' + tokenHead.ind
       }
-      relationships.forEach(drawArrow);
     }
-  }, [newTagsFlag]);
+  }, [dependencyParsed]);
 
   return (
     <div className="App">
