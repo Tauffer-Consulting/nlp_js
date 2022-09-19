@@ -21,7 +21,6 @@ const Home = () => {
     });
   }, [message])
 
-
   return (
     <div className="App">
       <h1>Interactive grammar</h1>

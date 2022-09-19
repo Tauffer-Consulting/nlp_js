@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import LeaderLine from "react-leader-line";
-import { IGrammarRelationshipData } from '../../interfaces/grammar-relationship-interface'
+import { IGrammarRelationshipData, ISelectedText } from '../../interfaces/grammar-relationship-interface'
 
 interface Props {
     data?: IGrammarRelationshipData;
@@ -22,16 +22,31 @@ const color_pallete = [
     "rgba(247, 0, 235, 0)",
   ]
 
+
 const GrammarRelationshipComponent = ({data}: Props) => {
   const [tags, setTags] = useState<any[]>([])
+  const [selectedText, setSelectedText] = useState<ISelectedText>()
+
+  const handleSpanClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault()
+    setSelectedText({
+      text: e.currentTarget.innerText,
+      id: e.currentTarget.id
+    })
+    // @todo update background color style ?
+    //e.target.style.setProperty('background-color', 'red')
+
+  }, [tags])
   
   useEffect(() => {
     if (!data) return;
+
     var newTags: any[] = []
     Object.entries(data).forEach(([key, value], index) => {
       const tag = 
         <span
           className='indent'
+          onClick={handleSpanClick}
           key={2*index}
           id={`span-tag-${index}`}
           style={{
@@ -51,9 +66,13 @@ const GrammarRelationshipComponent = ({data}: Props) => {
   useEffect(()=>{
     if (!data) return;
     for (let i=0; i<tags.length; i++) {
+        
+    }
+    for (let i=0; i<tags.length; i++) {
       const targetNode = document.getElementById(tags[i].props.id)
       const tokenObj = data[i.toString()];
       const tokenHead = tokenObj.head
+
       if (tokenHead != null) {
         const sourceNode = document.getElementById('span-tag-' + tokenHead.ind);
         if (i % 2 === 0) {
@@ -74,7 +93,6 @@ const GrammarRelationshipComponent = ({data}: Props) => {
           middleLabel: LeaderLine.captionLabel(tokenHead.relationship, { color: 'black', fontSize: "25px" }),
         };
         var line = new LeaderLine(
-          // @ts-ignore
           LeaderLine.mouseHoverAnchor(
             sourceNode,
             'draw',
@@ -85,7 +103,6 @@ const GrammarRelationshipComponent = ({data}: Props) => {
             }
           ),
           // targetNode,
-          // @ts-ignore
           LeaderLine.mouseHoverAnchor(
             targetNode,
             'draw',
@@ -97,7 +114,6 @@ const GrammarRelationshipComponent = ({data}: Props) => {
           ),
           lineOptions
         );
-        // @ts-ignore
         line.id = "arrow-line-" + i.toString() + '-' + tokenHead.ind
       }
     }

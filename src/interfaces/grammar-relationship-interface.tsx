@@ -8,8 +8,13 @@ export interface IGrammarRelationshipData {
   [key: string | number]: {
     text: string,
     pos: string,
-    head: IHead[]
+    head: IHead
     posTag: string
     children: any[]
   }
+}
+
+export interface ISelectedText {
+  text: string
+  id: string
 }
