@@ -26,6 +26,7 @@ const color_pallete = [
 const GrammarRelationshipComponent = ({data}: Props) => {
   const [tags, setTags] = useState<any[]>([])
   const [selectedText, setSelectedText] = useState<ISelectedText>()
+  const [lines, setLines] = useState<any[]>([])
 
   const handleSpanClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
@@ -65,9 +66,8 @@ const GrammarRelationshipComponent = ({data}: Props) => {
 
   useEffect(()=>{
     if (!data) return;
-    for (let i=0; i<tags.length; i++) {
-        
-    }
+    removeLines()
+    var auxLines: any = []
     for (let i=0; i<tags.length; i++) {
       const targetNode = document.getElementById(tags[i].props.id)
       const tokenObj = data[i.toString()];
@@ -115,9 +115,19 @@ const GrammarRelationshipComponent = ({data}: Props) => {
           lineOptions
         );
         line.id = "arrow-line-" + i.toString() + '-' + tokenHead.ind
+        auxLines.push(line)
       }
     }
+    setLines(auxLines)
   }, [tags, data])
+
+  const removeLines = useCallback(()=>{
+    for (var l of lines){
+      if (l) {
+        l.remove()
+      }
+    }
+  }, [data, lines])
 
   return (
     <div>
