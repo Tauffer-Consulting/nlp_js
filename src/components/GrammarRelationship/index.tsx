@@ -71,6 +71,7 @@ const GrammarRelationshipComponent = ({data}: Props) => {
     for (let i=0; i<tags.length; i++) {
       const targetNode = document.getElementById(tags[i].props.id)
       const tokenObj = data[i.toString()];
+      if (!tokenObj) continue;
       const tokenHead = tokenObj.head
 
       if (tokenHead != null) {
